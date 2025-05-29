@@ -16,6 +16,8 @@ pip-log.txt
 # Virtual environment
 venv/
 
-.vscode
+.vscode/
+
+Dockerfile
 
 .pytest_cache
