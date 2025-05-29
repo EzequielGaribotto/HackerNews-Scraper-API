@@ -1,0 +1,17 @@
+# Pycache
+__pycache__/
+app/__pycache__/
+tests/__pycache__/
+tests/.pytest_cache/
+
+# Python bytecode files
+*.py[cod]
+
+# Distribution / packaging
+.Python
+
+# Installer logs
+pip-log.txt
+
+# Virtual environment
+venv/
