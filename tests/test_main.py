@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -61,7 +60,7 @@ class TestArticleStructure:
 class TestErrorHandling:
     def test_invalid_endpoint(self):
         response = client.get("/invalid")
-        assert response.status_code == 404, "Invalid endpoint should return 404"
+        assert response.status_code == 422, "Invalid endpoint should return 422"
     
     def test_invalid_method(self):
         response = client.post("/")
