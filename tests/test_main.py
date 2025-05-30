@@ -76,5 +76,5 @@ class TestErrorHandling:
     
     def test_page_limit(self):
         """Test upper limit on page numbers"""
-        response = client.get("/100")
+        response = client.get("/11")
         assert response.status_code == 400
