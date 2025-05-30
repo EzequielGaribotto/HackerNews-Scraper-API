@@ -55,7 +55,7 @@ class TestHackerNewsScraper:
         assert "created_at" in article
         
         # Verify request was made correctly
-        mock_get.assert_called_once_with("https://news.ycombinator.com")
+        mock_get.assert_called_once_with("https://news.ycombinator.com?p=1")
     
     @patch('app.scraper.requests.get')
     def test_scrape_page_with_page_number(self, mock_get, scraper, mock_html_response):

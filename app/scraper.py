@@ -1,30 +1,111 @@
-from typing import List, Dict
-from datetime import datetime
+from bs4 import BeautifulSoup
+from typing import List, Dict, Optional
 from fastapi import HTTPException
+import requests
+from urllib.parse import urljoin
 
 class HackerNewsScraper:
     def __init__(self):
         self.base_url = "https://news.ycombinator.com"
-        self.cache = {}
     
     def scrape_page(self, page_num: int = 1) -> List[Dict]:
-        """Scrape a single page of Hacker News - minimal mock implementation"""
-        # Return mock articles that satisfy the test requirements
-        articles_per_page = 5
-        mock_articles = []
+        """Scrape a single page of Hacker News"""
+
+        url = f"{self.base_url}?p={page_num}"
         
-        for i in range(articles_per_page):
-            article_id = (page_num - 1) * articles_per_page + i + 1
-            mock_articles.append({
-                "title": f"Mock Article {article_id}",
-                "url": f"https://example.com/article{article_id}",
-                "points": (article_id * 1000),
-                "author": f"user{article_id * 100}",
-                "comments": (article_id * 10),
-                "created_at": datetime.now().isoformat()
-            })
-        
-        return mock_articles
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.content, 'html.parser')
+            articles = []
+            
+            article_rows = soup.find_all('tr', class_='athing')
+            
+            for row in article_rows:
+                try:
+                    article = self._extract_article_data(row)
+                    if article:
+                        articles.append(article)
+                except Exception:
+                    continue
+            
+            return articles
+            
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to fetch Hacker News: {str(e)}"
+            )
+    
+    def _extract_article_data(self, row) -> Optional[Dict]:
+        """Extract article data from a row element"""
+        try:
+            titleline = row.find('span', class_='titleline')
+            if not titleline:
+                return None
+                
+            title_link = titleline.find('a')
+            if not title_link:
+                return None
+                
+            title = title_link.get_text(strip=True)
+            url = title_link.get('href', '')
+            url = urljoin(self.base_url, url)
+
+            metadata_row = row.find_next_sibling('tr')
+            
+            # Initialize with defaults
+            points = 0
+            author = "unknown"
+            comments = 0
+            created_at = None
+
+            # Extract metadata if available
+            if metadata_row:
+                subtext = metadata_row.find('td', class_='subtext')
+                if subtext:
+                    # Extract points
+                    score_span = subtext.find('span', class_='score')
+                    if score_span:
+                        try:
+                            points_text = score_span.get_text(strip=True)
+                            points = int(points_text.split()[0])
+                        except (ValueError, IndexError):
+                            points = None
+                    
+                    # Extract author
+                    author_link = subtext.find('a', class_='hnuser')
+                    if author_link:
+                        author = author_link.get_text(strip=True)
+                    
+                    # Extract comments
+                    comment_links = subtext.find_all('a')
+                    for link in comment_links:
+                        link_text = link.get_text(strip=True)
+                        if 'comment' in link_text:
+                            try:
+                                comments = int(link_text.split()[0])
+                            except (ValueError, IndexError):
+                                comments = None
+                            break
+                    
+                    # Extract timestamp from age span
+                    age_span = subtext.find('span', class_='age')
+                    if age_span and age_span.get('title'):
+                        created_at = age_span.get('title')
+            
+            return {
+                "title": title,
+                "url": url,
+                "points": points,
+                "author": author,
+                "comments": comments,
+                "created_at": created_at
+            }
+            
+        except Exception:
+            return None
     
     def get_articles(self, num_pages: int) -> List[Dict]:
         """Get articles from multiple pages"""
