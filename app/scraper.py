@@ -7,6 +7,8 @@ from urllib.parse import urljoin
 class HackerNewsScraper:
     def __init__(self):
         self.base_url = "https://news.ycombinator.com"
+        self.cache = {}
+    
     
     def scrape_page(self, page_num: int = 1) -> List[Dict]:
         """Scrape a single page of Hacker News"""
@@ -121,3 +123,11 @@ class HackerNewsScraper:
             all_articles.extend(articles)
         
         return all_articles
+    
+    def get_cache_status(self) -> Dict:
+        """Get information about the current cache"""
+        # This is a placeholder for cache status, as the actual caching mechanism is not implemented
+        return {
+            "cache_size": 0,
+            "cache_info": "Cache functionality not implemented"
+        }
