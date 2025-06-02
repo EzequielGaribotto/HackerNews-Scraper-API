@@ -9,7 +9,6 @@ class HackerNewsScraper:
         self.base_url = "https://news.ycombinator.com"
         self.cache = {}
     
-    
     def scrape_page(self, page_num: int = 1) -> List[Dict]:
         """Scrape a single page of Hacker News"""
 
@@ -23,7 +22,6 @@ class HackerNewsScraper:
             articles = []
             
             article_rows = soup.find_all('tr', class_='athing')
-            
             for row in article_rows:
                 try:
                     article = self._extract_article_data(row)
@@ -110,7 +108,7 @@ class HackerNewsScraper:
             return None
     
     def get_articles(self, num_pages: int) -> List[Dict]:
-        """Get articles from multiple pages"""
+        """Get articles from multiple pages with caching"""
         if num_pages < 1 or num_pages > 10:
             raise HTTPException(
                 status_code=400, 
@@ -118,16 +116,27 @@ class HackerNewsScraper:
             )
         
         all_articles = []
+        pages_to_fetch = []
+        
+        # Check which pages need to be fetched
         for page in range(1, num_pages + 1):
+            if page in self.cache:
+                all_articles.extend(self.cache[page])
+            else:
+                pages_to_fetch.append(page)
+        
+        # Fetch only the pages not in cache
+        for page in pages_to_fetch:
             articles = self.scrape_page(page)
+            self.cache[page] = articles
             all_articles.extend(articles)
         
         return all_articles
     
     def get_cache_status(self) -> Dict:
-        """Get information about the current cache"""
-        # This is a placeholder for cache status, as the actual caching mechanism is not implemented
+        """Return information about the current cache state"""
         return {
-            "cache_size": 0,
-            "cache_info": "Cache functionality not implemented"
+            "cached_pages": list(self.cache.keys()),
+            "total_articles": sum(len(articles) for articles in self.cache.values()),
+            "articles_per_page": {page: len(articles) for page, articles in self.cache.items()}
         }
