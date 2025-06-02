@@ -1,13 +1,21 @@
 import pytest
 from unittest.mock import Mock, patch
+from app.config import MAX_PAGES
 from fastapi import HTTPException
-from app.main import HackerNewsScraper
+from app.dependencies import get_scraper
+from app.dependencies import reset_scraper
+
 
 class TestHackerNewsScraper:
+    @pytest.fixture(autouse=True)
+    def setup_scraper(self):
+        """Reset scraper before each test"""
+        reset_scraper()
+        yield
     
     @pytest.fixture
     def scraper(self):
-        return HackerNewsScraper()
+        return get_scraper()
     
     @pytest.fixture
     def mock_html_response(self):
@@ -166,5 +174,5 @@ class TestHackerNewsScraper:
         assert exc_info.value.status_code == 400
         
         with pytest.raises(HTTPException) as exc_info:
-            scraper.get_articles(11)
+            scraper.get_articles(MAX_PAGES + 1)
         assert exc_info.value.status_code == 400

@@ -1,15 +1,22 @@
 import pytest
 from unittest.mock import patch, Mock
-from app.scraper import HackerNewsScraper
 from fastapi.testclient import TestClient
 from app.main import app
+from app.dependencies import get_scraper
+from app.dependencies import reset_scraper
 
 client = TestClient(app)
 
 class TestScraperCache:
+    @pytest.fixture(autouse=True)
+    def setup_scraper(self):
+        """Reset scraper before each test"""
+        reset_scraper()
+        yield
+    
     @pytest.fixture
     def scraper(self):
-        return HackerNewsScraper()
+        return get_scraper()
     
     @pytest.fixture
     def mock_html_response(self):
@@ -130,7 +137,7 @@ class TestScraperCache:
         mock_get.return_value = mock_response
         
         # Create first scraper instance and populate cache
-        first_scraper = HackerNewsScraper()
+        first_scraper = get_scraper()
         first_scraper.get_articles(2)
         
         # Verify cache is populated
@@ -138,9 +145,10 @@ class TestScraperCache:
         assert 1 in first_scraper.cache
         assert 2 in first_scraper.cache
         
+        reset_scraper() # Reset the global scraper instance
         # Create new scraper instance (simulating application restart)
-        new_scraper = HackerNewsScraper()
-        
+        new_scraper = get_scraper()
+
         # Verify cache is empty in the new instance
         assert len(new_scraper.cache) == 0
         

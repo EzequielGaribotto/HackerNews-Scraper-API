@@ -1,12 +1,13 @@
+import requests
 from bs4 import BeautifulSoup
 from typing import List, Dict, Optional
 from fastapi import HTTPException
-import requests
 from urllib.parse import urljoin
+from .config import BASE_URL, MAX_PAGES
 
 class HackerNewsScraper:
     def __init__(self):
-        self.base_url = "https://news.ycombinator.com"
+        self.base_url = BASE_URL
         self.cache = {}
     
     def scrape_page(self, page_num: int = 1) -> List[Dict]:
@@ -109,10 +110,10 @@ class HackerNewsScraper:
     
     def get_articles(self, num_pages: int) -> List[Dict]:
         """Get articles from multiple pages with caching"""
-        if num_pages < 1 or num_pages > 10:
+        if num_pages < 1 or num_pages > MAX_PAGES:
             raise HTTPException(
-                status_code=400, 
-                detail="Number of pages must be between 1 and 10"
+                status_code=400,
+                detail=f"Number of pages must be between 1 and {MAX_PAGES}"
             )
         
         all_articles = []
