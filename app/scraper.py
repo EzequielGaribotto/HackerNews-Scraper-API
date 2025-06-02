@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from typing import List, Dict, Optional
 from fastapi import HTTPException
 from urllib.parse import urljoin
+import re
 from .config import BASE_URL, MAX_PAGES
 
 class HackerNewsScraper:
@@ -70,8 +71,10 @@ class HackerNewsScraper:
                     score_span = subtext.find('span', class_='score')
                     if score_span:
                         try:
-                            points_text = score_span.get_text(strip=True)
-                            points = int(points_text.split()[0])
+                            points_text = score_span.get_text()
+                            points = re.search(r'(\d+)', points_text)
+                            if points:
+                                points = int(points.group(1))
                         except (ValueError, IndexError):
                             points = None
                     
@@ -85,10 +88,10 @@ class HackerNewsScraper:
                     for link in comment_links:
                         link_text = link.get_text(strip=True)
                         if 'comment' in link_text:
-                            try:
-                                comments = int(link_text.split()[0])
-                            except (ValueError, IndexError):
-                                comments = None
+                            comment_text = link.get_text()
+                            comment_match = re.search(r'(\d+)', comment_text)
+                            if comment_match:
+                                comments = int(comment_match.group(1))
                             break
                     
                     # Extract timestamp from age span
