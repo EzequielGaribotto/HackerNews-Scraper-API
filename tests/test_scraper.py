@@ -58,9 +58,9 @@ class TestHackerNewsScraper:
         assert article["title"] == "Test Article Title"
         assert article["url"] == "https://example.com"
         assert article["points"] == 150
-        assert article["author"] == "testuser"
+        assert article["sent_by"] == "testuser"
         assert article["comments"] == 25
-        assert "created_at" in article
+        assert "published" in article
         
         # Verify request was made correctly
         mock_get.assert_called_once_with("https://news.ycombinator.com?p=1")
@@ -135,9 +135,9 @@ class TestHackerNewsScraper:
         article = articles[0]
         assert article["title"] == "Title Only Article"
         assert article["url"] == "https://example.com"
-        assert "created_at" in article
+        assert "published" in article
         assert article["points"] == 0
-        assert article["author"] == "unknown"
+        assert article["sent_by"] == "unknown"
         assert article["comments"] == 0
     
     @patch('app.scraper.requests.get')

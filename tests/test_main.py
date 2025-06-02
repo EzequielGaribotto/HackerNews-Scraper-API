@@ -40,7 +40,7 @@ class TestArticleStructure:
         
         assert len(articles) > 0, "Root endpoint should return articles"
         
-        required_fields = ["title", "url", "points", "comments", "author", "created_at"]
+        required_fields = ["title", "url", "points", "comments", "sent_by", "published"]
         for article in articles:
             for field in required_fields:
                 assert field in article, f"Article is missing required field: {field}"

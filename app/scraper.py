@@ -58,9 +58,9 @@ class HackerNewsScraper:
             
             # Initialize with defaults
             points = 0
-            author = "unknown"
+            sent_by = "unknown"
             comments = 0
-            created_at = None
+            published = None
 
             # Extract metadata if available
             if metadata_row:
@@ -75,10 +75,10 @@ class HackerNewsScraper:
                         except (ValueError, IndexError):
                             points = None
                     
-                    # Extract author
-                    author_link = subtext.find('a', class_='hnuser')
-                    if author_link:
-                        author = author_link.get_text(strip=True)
+                    # Extract sent_by
+                    sent_by_link = subtext.find('a', class_='hnuser')
+                    if sent_by_link:
+                        sent_by = sent_by_link.get_text(strip=True)
                     
                     # Extract comments
                     comment_links = subtext.find_all('a')
@@ -94,15 +94,15 @@ class HackerNewsScraper:
                     # Extract timestamp from age span
                     age_span = subtext.find('span', class_='age')
                     if age_span and age_span.get('title'):
-                        created_at = age_span.get('title')
+                        published = age_span.get('title')
             
             return {
                 "title": title,
                 "url": url,
                 "points": points,
-                "author": author,
-                "comments": comments,
-                "created_at": created_at
+                "sent_by": sent_by,
+                "published": published,
+                "comments": comments
             }
             
         except Exception:
