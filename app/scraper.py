@@ -96,7 +96,7 @@ class HackerNewsScraper:
                     
                     # Extract timestamp from age span
                     age_span = subtext.find('span', class_='age')
-                    if age_span and age_span.get('title'):
+                    if age_span:
                         if age_span.find('a'):
                             # If the age span has a link, use its text
                             published = age_span.find('a').get_text(strip=True)
